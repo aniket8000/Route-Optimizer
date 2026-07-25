@@ -8,9 +8,13 @@ export async function getDurationMatrix(stops) {
   const coords = stops.map((s) => `${s.lng},${s.lat}`).join(";");
   const url = `${OSRM_BASE_URL}/table/v1/driving/${coords}`;
 
-  const { data } = await axios.get(url, {
-    params: { annotations: "duration,distance" },
-  });
+  let data;
+  try {
+    ({ data } = await axios.get(url, { params: { annotations: "duration,distance" } }));
+  } catch (err) {
+    // tag which upstream call actually failed - a bare "404" is useless on its own
+    throw new Error(`OSRM request failed (${url}): ${err.message}`);
+  }
 
   if (data.code !== "Ok") {
     throw new Error(`OSRM error: ${data.code} - ${data.message || "no message"}`);
