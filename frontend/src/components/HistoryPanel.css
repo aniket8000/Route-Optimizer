@@ -1,0 +1,89 @@
+.history-modal {
+  width: 440px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+  overflow-y: auto;
+}
+
+.history-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.history-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.history-item-title {
+  font-weight: 600;
+  color: #f9fafb;
+  font-size: 0.9rem;
+}
+
+.history-item-time {
+  color: #93c5fd;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.history-item-meta {
+  color: #6b7280;
+  font-size: 0.76rem;
+}
+
+.history-item-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.history-item-actions .btn {
+  padding: 7px 10px;
+  font-size: 0.76rem;
+  flex: 1;
+}
+
+.history-delete {
+  flex: 0 0 auto;
+  color: #f87171;
+}
+
+.history-delete:hover {
+  color: #fca5a5;
+}
+
+.history-stop-sequence {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 2px 0;
+}
+
+.history-stop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: #d1d5db;
+}
+
+.history-stop span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

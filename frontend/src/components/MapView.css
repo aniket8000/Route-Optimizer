@@ -1,0 +1,68 @@
+.pin {
+  width: 30px;
+  height: 30px;
+  border-radius: 50% 50% 50% 0;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  transform: rotate(-45deg);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.45);
+  position: relative;
+}
+
+.pin.pin-depot {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+
+.pin span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(45deg);
+  color: white;
+  font-weight: 700;
+  font-size: 12px;
+  font-family: system-ui, sans-serif;
+}
+
+/* animated "flow" effect so the route line feels alive instead of static */
+.route-line {
+  animation: flow 20s linear infinite;
+}
+
+@keyframes flow {
+  to {
+    stroke-dashoffset: -1000;
+  }
+}
+
+.leaflet-container {
+  background: #dce4ea;
+}
+
+.user-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #3b82f6;
+  border: 2px solid white;
+  box-shadow: 0 0 6px rgba(59, 130, 246, 0.8);
+  position: relative;
+}
+
+.user-dot-pulse {
+  position: absolute;
+  inset: -10px;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.4);
+  animation: pulse 2s ease-out infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.4);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
