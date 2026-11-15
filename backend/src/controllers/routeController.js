@@ -1,8 +1,22 @@
+import mongoose from "mongoose";
 import Route from "../models/Route.js";
 import { getDurationMatrix } from "../services/osrmService.js";
 import { solveRoute } from "../services/solverService.js";
+import { errorResponse } from "../utils/errorResponse.js";
 
 const MAX_STOPS = 15;
+
+// a stop with missing or junk coords would otherwise go all the way to OSRM as
+// "undefined,undefined" and come back as a confusing 500
+function isValidStop(stop) {
+  return (
+    stop != null &&
+    typeof stop.lat === "number" &&
+    typeof stop.lng === "number" &&
+    Math.abs(stop.lat) <= 90 &&
+    Math.abs(stop.lng) <= 180
+  );
+}
 
 // POST /api/routes/optimize
 export async function optimizeRoute(req, res) {
@@ -14,6 +28,9 @@ export async function optimizeRoute(req, res) {
     }
     if (stops.length > MAX_STOPS) {
       return res.status(400).json({ error: `max ${MAX_STOPS} stops at a time` });
+    }
+    if (!stops.every(isValidStop)) {
+      return res.status(400).json({ error: "every stop needs a valid lat and lng" });
     }
 
     const { durations, distances } = await getDurationMatrix(stops);
@@ -36,7 +53,7 @@ export async function optimizeRoute(req, res) {
     res.json({ stops, order, legs, totalDuration, totalDistance });
   } catch (err) {
     console.error("optimizeRoute failed:", err.message);
-    res.status(500).json({ error: "couldn't optimize route", details: err.message });
+    res.status(500).json(errorResponse("couldn't optimize route", err));
   }
 }
 
@@ -55,8 +72,12 @@ export async function saveRoute(req, res) {
     });
     res.status(201).json(route);
   } catch (err) {
+    // missing/malformed fields are the client's fault, not a server error
+    if (err.name === "ValidationError" || err.name === "CastError") {
+      return res.status(400).json(errorResponse("route data is incomplete or invalid", err));
+    }
     console.error("saveRoute failed:", err.message);
-    res.status(500).json({ error: "couldn't save route", details: err.message });
+    res.status(500).json(errorResponse("couldn't save route", err));
   }
 }
 
@@ -67,12 +88,17 @@ export async function listRoutes(req, res) {
     res.json(routes);
   } catch (err) {
     console.error("listRoutes failed:", err.message);
-    res.status(500).json({ error: "couldn't fetch routes", details: err.message });
+    res.status(500).json(errorResponse("couldn't fetch routes", err));
   }
 }
 
 // DELETE /api/routes/:id - requires auth, only deletes routes the user owns
 export async function deleteRoute(req, res) {
+  // a malformed id can't match anything - answer that directly instead of letting
+  // mongoose throw a CastError that turns into a 500
+  if (!mongoose.isValidObjectId(req.params.id)) {
+    return res.status(404).json({ error: "route not found" });
+  }
   try {
     const route = await Route.findOneAndDelete({ _id: req.params.id, userId: req.userId });
     if (!route) {
@@ -81,6 +107,6 @@ export async function deleteRoute(req, res) {
     res.status(204).end();
   } catch (err) {
     console.error("deleteRoute failed:", err.message);
-    res.status(500).json({ error: "couldn't delete route", details: err.message });
+    res.status(500).json(errorResponse("couldn't delete route", err));
   }
 }

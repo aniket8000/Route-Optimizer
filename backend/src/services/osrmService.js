@@ -1,6 +1,9 @@
 import axios from "axios";
 
 const OSRM_BASE_URL = process.env.OSRM_BASE_URL || "https://router.project-osrm.org";
+// the public server normally answers in a second or two - if it hangs, give up
+// instead of leaving the user staring at a spinner forever
+const OSRM_TIMEOUT_MS = 30_000;
 
 // stops: [{ lat, lng }, ...] -> NxN matrices of driving seconds and meters between every pair
 export async function getDurationMatrix(stops) {
@@ -10,7 +13,10 @@ export async function getDurationMatrix(stops) {
 
   let data;
   try {
-    ({ data } = await axios.get(url, { params: { annotations: "duration,distance" } }));
+    ({ data } = await axios.get(url, {
+      params: { annotations: "duration,distance" },
+      timeout: OSRM_TIMEOUT_MS,
+    }));
   } catch (err) {
     // tag which upstream call actually failed - a bare "404" is useless on its own
     throw new Error(`OSRM request failed (${url}): ${err.message}`);
