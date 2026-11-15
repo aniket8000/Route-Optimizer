@@ -7,7 +7,7 @@
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 9px;
-  padding: 10px 12px 10px 34px;
+  padding: 10px 32px 10px 34px;
   color: #f9fafb;
   font-size: 0.85rem;
   outline: none;
@@ -65,8 +65,31 @@
   overflow-y: auto;
 }
 
+.search-clear {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: #9ca3af;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.search-clear:hover {
+  color: #f9fafb;
+  background: rgba(255, 255, 255, 0.14);
+}
+
 .search-result {
-  display: block;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
   width: 100%;
   text-align: left;
   background: none;
@@ -83,7 +106,88 @@
   border-bottom: none;
 }
 
-.search-result:hover {
+.search-result:hover,
+.search-result:focus-visible {
   background: rgba(59, 130, 246, 0.12);
   color: #f9fafb;
+  outline: none;
+}
+
+.search-result-icon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+  color: #a78bfa;
+}
+
+.search-result-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.search-result-main {
+  color: #f3f4f6;
+  font-weight: 600;
+  font-size: 0.82rem;
+}
+
+.search-result-rest {
+  color: #6b7280;
+  font-size: 0.74rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-results {
+  animation: dropIn 0.16s ease;
+}
+
+@keyframes dropIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+/* floating version on top of the map (mobile) - glassy pill, bigger tap target */
+.search-bar.is-floating input {
+  height: 48px;
+  border-radius: 14px;
+  padding-left: 40px;
+  padding-right: 40px;
+  font-size: 16px; /* anything under 16px makes iOS zoom the whole page when you tap in */
+  background: rgba(16, 19, 28, 0.88);
+  border-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.search-bar.is-floating .search-icon {
+  left: 14px;
+}
+
+.search-bar.is-floating .search-clear {
+  right: 10px;
+  width: 30px;
+  height: 30px;
+}
+
+.search-bar.is-floating .search-spinner {
+  right: 16px;
+}
+
+.search-bar.is-floating .search-results {
+  max-height: 50dvh;
+  border-radius: 14px;
+  background: rgba(22, 26, 36, 0.97);
+  backdrop-filter: blur(14px);
+}
+
+.search-bar.is-floating .search-result {
+  padding: 13px 14px;
 }

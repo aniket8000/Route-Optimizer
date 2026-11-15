@@ -10,6 +10,7 @@ body,
 }
 
 body {
+  background: #0b0e14; /* matches both pages, so there's no white flash or overscroll edge */
   font-family: "Inter", system-ui, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

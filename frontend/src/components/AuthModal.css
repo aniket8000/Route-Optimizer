@@ -86,3 +86,138 @@
   font-weight: 600;
   padding: 0;
 }
+
+/* ---------- motion + mobile ---------- */
+
+.modal-backdrop {
+  animation: backdropIn 0.2s ease;
+  padding: 16px;
+}
+
+.modal {
+  animation: modalIn 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes backdropIn {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+}
+
+.auth-form input {
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.auth-form input:focus {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.password-field {
+  position: relative;
+  display: flex;
+}
+
+.password-field input {
+  flex: 1;
+  min-width: 0;
+  padding-right: 64px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 6px 8px;
+  border: none;
+  border-radius: 7px;
+  background: none;
+  color: #93c5fd;
+  font-size: 0.74rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.password-toggle:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.modal-close {
+  width: 34px;
+  height: 34px;
+  top: 10px;
+  right: 10px;
+  border-radius: 10px;
+}
+
+.modal-close:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* on phones, popups become bottom sheets - easier to reach with a thumb */
+@media (max-width: 768px) {
+  .modal-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 22px 22px 0 0;
+    border-bottom: none;
+    padding: 30px 20px calc(24px + env(safe-area-inset-bottom));
+    animation: sheetUp 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .modal::before {
+    content: "";
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    width: 42px;
+    height: 5px;
+    margin-left: -21px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.18);
+  }
+
+  .auth-form input {
+    font-size: 16px; /* stops iOS zooming the page when the field is focused */
+    padding: 13px 14px;
+  }
+
+  .password-field input {
+    padding-right: 64px;
+  }
+
+  .auth-form .btn {
+    min-height: 48px;
+    font-size: 0.95rem;
+  }
+
+  .modal-switch,
+  .modal-switch button {
+    font-size: 0.88rem;
+  }
+}
+
+@keyframes sheetUp {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal,
+  .modal-backdrop {
+    animation: none;
+  }
+}

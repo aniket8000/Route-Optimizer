@@ -13,7 +13,16 @@ function placeLabel(props) {
     .join(", ");
 }
 
-export default function SearchBar({ onSelect }) {
+// splits a result into a bold main line and a muted "where is it" line, like map apps do
+function resultLines(props) {
+  const main = props.name || props.street || props.city || "Unnamed place";
+  const rest = [props.street, props.city, props.state]
+    .filter((part) => part && part !== main)
+    .join(", ");
+  return { main, rest };
+}
+
+export default function SearchBar({ onSelect, className = "", placeholder = "Search an address to add a stop" }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [open, setOpen] = useState(false);
@@ -67,33 +76,58 @@ export default function SearchBar({ onSelect }) {
     setOpen(false);
   }
 
+  function clearQuery() {
+    abortRef.current?.abort();
+    setQuery("");
+    setResults([]);
+    setOpen(false);
+  }
+
   return (
-    <div className="search-bar">
+    <div className={`search-bar ${className}`}>
       <svg className="search-icon" viewBox="0 0 24 24" fill="none" width="15" height="15">
         <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
         <path d="m20 20-3.5-3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
       </svg>
       <input
         type="text"
-        placeholder="Search an address to add as a stop..."
+        placeholder={placeholder}
+        aria-label="Search an address to add a stop"
+        enterKeyHint="search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onFocus={() => results.length > 0 && setOpen(true)}
         onBlur={() => setTimeout(() => setOpen(false), 150)}
       />
       {loading && <span className="search-spinner" />}
+      {!loading && query && (
+        <button type="button" className="search-clear" onClick={clearQuery} aria-label="Clear search">
+          ×
+        </button>
+      )}
 
       {open && results.length > 0 && (
         <div className="search-results">
-          {results.map((feature) => (
-            <button
-              key={feature.properties.osm_id}
-              className="search-result"
-              onClick={() => handlePick(feature)}
-            >
-              {placeLabel(feature.properties)}
-            </button>
-          ))}
+          {results.map((feature, i) => {
+            const { main, rest } = resultLines(feature.properties);
+            return (
+              <button
+                // osm ids can repeat across nodes/ways, so the index keeps keys unique
+                key={`${feature.properties.osm_type}-${feature.properties.osm_id}-${i}`}
+                className="search-result"
+                onClick={() => handlePick(feature)}
+              >
+                <svg className="search-result-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 21s-6-5.5-6-11a6 6 0 1 1 12 0c0 5.5-6 11-6 11Z" />
+                  <circle cx="12" cy="10" r="2" />
+                </svg>
+                <span className="search-result-text">
+                  <span className="search-result-main">{main}</span>
+                  {rest && <span className="search-result-rest">{rest}</span>}
+                </span>
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

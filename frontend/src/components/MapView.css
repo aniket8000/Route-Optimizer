@@ -35,7 +35,81 @@
 }
 
 .leaflet-container {
-  background: #dce4ea;
+  background: #0f1420; /* dark while satellite tiles load, instead of a grey flash */
+  font-family: inherit;
+}
+
+/* dark glass zoom buttons to match the rest of the app instead of leaflet's white boxes */
+.leaflet-bar {
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35) !important;
+}
+
+.leaflet-bar a,
+.leaflet-bar a:hover {
+  width: 36px !important;
+  height: 36px !important;
+  line-height: 36px !important;
+  background: rgba(16, 19, 28, 0.88) !important;
+  color: #e5e7eb !important;
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(10px);
+}
+
+.leaflet-bar a:hover {
+  background: rgba(30, 35, 50, 0.95) !important;
+}
+
+.leaflet-control-attribution {
+  background: rgba(16, 19, 28, 0.7) !important;
+  color: #9ca3af !important;
+  border-radius: 8px 0 0 0;
+  backdrop-filter: blur(6px);
+}
+
+.leaflet-control-attribution a {
+  color: #93c5fd !important;
+}
+
+/* "where am i" button, sits bottom-right over the map */
+.map-fab {
+  position: absolute;
+  right: 16px;
+  bottom: var(--map-fab-bottom, 32px);
+  z-index: 1000;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(16, 19, 28, 0.88);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #93c5fd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  transition: transform 0.15s ease, background 0.15s ease, bottom 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.map-fab:hover {
+  background: rgba(30, 35, 50, 0.95);
+}
+
+.map-fab:active {
+  transform: scale(0.94);
+}
+
+.map-fab svg {
+  width: 20px;
+  height: 20px;
+}
+
+.map-fab.is-locating svg {
+  animation: spin 1s linear infinite;
 }
 
 .user-dot {

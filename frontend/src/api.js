@@ -6,6 +6,11 @@ function authHeaders(token) {
   return { headers: { Authorization: `Bearer ${token}` } };
 }
 
+// a 401 on a logged-in call means the saved token is expired or no longer valid
+export function isSessionExpired(err) {
+  return err.response?.status === 401;
+}
+
 export async function optimizeRoute(stops) {
   const { data } = await axios.post(`${BASE_URL}/routes/optimize`, { stops });
   return data; // { stops, order, legs, totalDuration, totalDistance }

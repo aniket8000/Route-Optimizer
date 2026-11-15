@@ -40,6 +40,8 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  text-decoration: none; /* it's a link back to the homepage now */
+  color: inherit;
 }
 
 .brand-icon {
@@ -375,34 +377,293 @@
 
 .map-container {
   flex: 1;
+  position: relative;
+  min-width: 0;
 }
 
-/* ---------- mobile ---------- */
+/* ---------- floating hints over the map ---------- */
 
-@media (max-width: 768px) {
-  .app {
-    flex-direction: column;
+.map-pill {
+  position: absolute;
+  top: var(--map-pill-top, 18px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  max-width: calc(100% - 32px);
+  padding: 9px 16px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #e5e7eb;
+  white-space: nowrap;
+  background: rgba(16, 19, 28, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  pointer-events: none; /* never block a tap meant for the map */
+  animation: pillIn 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.map-pill-busy {
+  color: #fdba74;
+  border-color: rgba(251, 146, 60, 0.35);
+}
+
+.map-pill-busy .spinner {
+  border-color: rgba(251, 146, 60, 0.3);
+  border-top-color: #fb923c;
+}
+
+@keyframes pillIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -6px);
+  }
+}
+
+/* ---------- toast ---------- */
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 18px;
+  border-radius: 12px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #f9fafb;
+  background: rgba(22, 26, 36, 0.95);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  animation: toastIn 2.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.toast-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.2);
+}
+
+@keyframes toastIn {
+  0% { opacity: 0; transform: translate(-50%, 12px) scale(0.97); }
+  10%, 85% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, 6px); }
+}
+
+/* numbers pop slightly when they change (stops added, route optimized) */
+.stat-value {
+  animation: statPop 0.35s cubic-bezier(0.3, 1.5, 0.5, 1);
+  white-space: nowrap;
+}
+
+@keyframes statPop {
+  from {
+    opacity: 0.3;
+    transform: translateY(4px);
+  }
+}
+
+/* keyboard users get a visible focus ring, mouse clicks don't */
+.btn:focus-visible,
+.link-btn:focus-visible,
+.stop-remove:focus-visible,
+.brand:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: 2px;
+}
+
+/* ---------- mobile: full-screen map + floating search + bottom sheet ---------- */
+
+.app-mobile {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  /* the locate button and leaflet's attribution ride just above the collapsed sheet */
+  --map-fab-bottom: calc(var(--sheet-peek, 220px) + 14px);
+  --map-pill-top: calc(76px + env(safe-area-inset-top));
+}
+
+.app-mobile .map-container {
+  position: absolute;
+  inset: 0;
+}
+
+.app-mobile .leaflet-control-zoom {
+  display: none; /* pinch to zoom on a phone, the +/- buttons just get in the way */
+}
+
+.app-mobile .leaflet-bottom {
+  bottom: var(--sheet-peek, 220px);
+  transition: bottom 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.app-mobile .leaflet-control-attribution {
+  font-size: 9px;
+}
+
+.mobile-topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: calc(12px + env(safe-area-inset-top)) 12px 12px;
+  pointer-events: none; /* let taps between the buttons fall through to the map */
+}
+
+.mobile-topbar > * {
+  pointer-events: auto;
+}
+
+.mobile-topbar .search-bar {
+  flex: 1;
+  min-width: 0;
+}
+
+.mobile-icon-btn {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.mobile-icon-btn.brand-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.mobile-account-btn {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(16, 19, 28, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: #e5e7eb;
+  font-weight: 700;
+  font-size: 1.05rem;
+  cursor: pointer;
+}
+
+.mobile-account-btn svg {
+  width: 21px;
+  height: 21px;
+}
+
+.app-mobile .toast {
+  bottom: auto;
+  top: calc(76px + env(safe-area-inset-top));
+}
+
+/* sheet content: same building blocks as the sidebar, sized for thumbs */
+.sheet .stat-row {
+  gap: 8px;
+}
+
+.sheet .stat-card {
+  padding: 9px 11px;
+  min-width: 0;
+}
+
+.sheet .stat-value {
+  font-size: clamp(0.98rem, 4.4vw, 1.2rem);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sheet-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.sheet-actions .btn,
+.sheet-actions-secondary .btn {
+  flex: 1;
+  min-height: 48px;
+  min-width: 0;
+  font-size: 0.92rem;
+}
+
+.sheet-actions-secondary {
+  display: flex;
+  gap: 8px;
+}
+
+.sheet .account-row {
+  font-size: 0.86rem;
+  padding: 4px 0 12px;
+}
+
+.sheet .link-btn {
+  font-size: 0.86rem;
+  padding: 6px 2px;
+}
+
+.sheet .stop-row,
+.sheet .leg-row {
+  padding: 6px 6px 6px 12px;
+  font-size: 0.85rem;
+}
+
+.sheet .stop-badge {
+  width: 24px;
+  height: 24px;
+  font-size: 0.74rem;
+}
+
+.sheet .stop-remove {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  font-size: 1.25rem;
+  border-radius: 10px;
+}
+
+.sheet .stop-remove:active {
+  background: rgba(239, 68, 68, 0.12);
+}
+
+.sheet .stop-list {
+  flex: none;
+}
+
+.sheet .stop-list-items {
+  overflow: visible; /* the sheet body already scrolls */
+}
+
+.sheet .leg-text span:not(.leg-arrow) {
+  max-width: 34%;
+}
+
+.sheet .leg-duration {
+  font-size: 0.78rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-pill,
+  .toast,
+  .stat-value {
+    animation: none;
   }
 
-  .sidebar {
-    width: 100%;
-    max-height: 48vh;
-    padding: 16px;
-    gap: 14px;
-    border-right: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  }
-
-  .brand h1 {
-    font-size: 0.95rem;
-  }
-
-  .subtitle {
-    font-size: 0.72rem;
-  }
-
-  .map-container {
-    flex: 1;
-    min-height: 0; /* lets flexbox actually shrink this instead of overflowing the page */
+  .toast {
+    opacity: 1;
+    transform: translateX(-50%);
   }
 }

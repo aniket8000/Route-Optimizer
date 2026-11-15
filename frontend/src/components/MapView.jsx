@@ -81,26 +81,94 @@ function LocateUser({ onLocated }) {
 // two or more zooms out to fit them all with some breathing room. clearing back
 // to zero flies home to the user's location instead of leaving the map stranded
 // wherever the last stop happened to be
-function FitToStops({ positions, userLocation }) {
+function FitToStops({ positions, userLocation, insets }) {
   const map = useMap();
   const hadStopsBefore = useRef(false);
 
+  // on mobile the search bar and bottom sheet float over the map - keep pins out from
+  // under them. kept in a ref so the sheet resizing doesn't make the map fly around
+  const insetsRef = useRef(insets);
   useEffect(() => {
+    insetsRef.current = insets;
+  }, [insets]);
+
+  // positions is a fresh array on every render, so depend on its contents instead -
+  // otherwise the map would re-fly every time anything in the app re-rendered
+  const positionsKey = JSON.stringify(positions);
+
+  useEffect(() => {
+    const positions = JSON.parse(positionsKey);
     if (positions.length === 1) {
       map.flyTo(positions[0], 17, { duration: 1 });
     } else if (positions.length > 1) {
-      map.flyToBounds(positions, { padding: [60, 60], maxZoom: 17, duration: 1 });
+      const { top = 0, bottom = 0 } = insetsRef.current || {};
+      map.flyToBounds(positions, {
+        paddingTopLeft: [60, 60 + top],
+        paddingBottomRight: [60, 60 + bottom],
+        maxZoom: 17,
+        duration: 1,
+      });
     } else if (hadStopsBefore.current && userLocation) {
       map.flyTo([userLocation.lat, userLocation.lng], 17, { duration: 1 });
     }
 
     hadStopsBefore.current = positions.length > 0;
-  }, [map, JSON.stringify(positions), userLocation]);
+  }, [map, positionsKey, userLocation]);
 
   return null;
 }
 
-export default function MapView({ stops, order, onMapClick, onStopDrag }) {
+// floating "where am i" button - re-centres on the rider's location, asking the browser
+// again if we didn't get it the first time
+function LocateButton({ userLocation, onLocated }) {
+  const map = useMap();
+  const ref = useRef(null);
+  const [locating, setLocating] = useState(false);
+
+  // this sits inside the map, so without this every tap on it would also drop a stop
+  useEffect(() => {
+    if (!ref.current) return;
+    L.DomEvent.disableClickPropagation(ref.current);
+    L.DomEvent.disableScrollPropagation(ref.current);
+  }, []);
+
+  function handleClick() {
+    if (userLocation) {
+      map.flyTo([userLocation.lat, userLocation.lng], 17, { duration: 1 });
+      return;
+    }
+    if (!navigator.geolocation) return;
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy };
+        onLocated(loc);
+        map.flyTo([loc.lat, loc.lng], 17, { duration: 1 });
+        setLocating(false);
+      },
+      () => setLocating(false),
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  }
+
+  return (
+    <button
+      ref={ref}
+      type="button"
+      className={`map-fab ${locating ? "is-locating" : ""}`}
+      onClick={handleClick}
+      aria-label="Show my location"
+      title="Show my location"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+        <circle cx="12" cy="12" r="4" />
+        <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+      </svg>
+    </button>
+  );
+}
+
+export default function MapView({ stops, order, onMapClick, onStopDrag, insets }) {
   const [userLocation, setUserLocation] = useState(null);
 
   // if we have a solved order, draw the route in that order, otherwise just connect stops as-clicked
@@ -114,15 +182,19 @@ export default function MapView({ stops, order, onMapClick, onStopDrag }) {
         attribution="Tiles &copy; Esri"
         url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
       />
-      {/* place/road name labels drawn on top, transparent everywhere else */}
+      {/* road names, then place names, drawn over the photos (transparent everywhere else).
+          these used to be CARTO's label tiles, but CARTO now serves an "API KEY REQUIRED"
+          watermark instead of labels without a key - esri's reference layers are still open */}
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-        url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png"
+        attribution='Labels &copy; Esri · Search &amp; routing &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}"
       />
+      <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}" />
       <ClickHandler onMapClick={onMapClick} />
       <ResizeWatcher />
       <LocateUser onLocated={setUserLocation} />
-      <FitToStops positions={polylinePositions} userLocation={userLocation} />
+      <FitToStops positions={polylinePositions} userLocation={userLocation} insets={insets} />
+      <LocateButton userLocation={userLocation} onLocated={setUserLocation} />
 
       {userLocation && (
         <>

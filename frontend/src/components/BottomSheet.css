@@ -1,0 +1,83 @@
+.sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1100; /* above leaflet's panes and controls (max 1000) */
+  height: min(80dvh, 680px);
+  display: flex;
+  flex-direction: column;
+  background: rgba(16, 19, 28, 0.985);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 22px 22px 0 0;
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.45);
+  transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.sheet.is-dragging {
+  transition: none;
+}
+
+.sheet-handle {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 26px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: grab;
+  touch-action: none; /* we handle the drag ourselves, don't let the page scroll */
+}
+
+.sheet-handle span {
+  width: 42px;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  transition: background 0.15s ease, width 0.2s ease;
+}
+
+.sheet-handle:active span,
+.sheet.is-dragging .sheet-handle span {
+  width: 52px;
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.sheet-peek {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 16px;
+}
+
+.sheet-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px 16px calc(16px + env(safe-area-inset-bottom));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.sheet.is-expanded .sheet-body,
+.sheet.is-dragging .sheet-body {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet,
+  .sheet-body {
+    transition: none;
+  }
+}
